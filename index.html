@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+
+<html>
+	<head>
+		<style type="text/css">
+			html, body {
+				height: 100%;
+				width: 100%;
+				margin: 0px;
+				overflow: hidden;
+				font-size: 20px;
+			}
+
+			#draw {
+				height: 100%;
+				width: 100%;
+				background-color: black;
+			}
+
+			#menu {
+				position: absolute;
+				width: 50%;
+				background-color: none;
+				bottom: 0px;
+				height: 2.5em;
+				margin-left: auto;
+				margin-right: auto;
+				margin-left: 25%;
+			}
+			.menuButton {
+				height: 100%;
+				width: 8%;
+				border: none;
+				font-weight: bold;
+				color: white;
+				bottom: 0;
+				background-color: black;
+				vertical-align: middle;
+				font-size: 2em;
+				outline: none;
+			}
+			button.menuButton:active {
+				transform: translateY(2px);
+			}
+			.red {
+				background-color: red;
+			}
+			.white {
+				background-color: white;
+			}
+			.blue {
+				background-color: blue;
+			}
+		</style>
+		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/paper.js/0.12.2/paper-core.js"></script>
+		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/hammerjs/2.0.8/hammer.min.js"></script>
+		<meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">
+		<script type="text/javascript">
+			var paintColor = "white";
+			var strokeSize = 3;
+
+			const changeColor = (color) => {
+				paintColor = color;
+			}
+
+			const increaseSize = () => {
+				strokeSize++;
+				updateStrokeSize();
+			}
+
+			const decreaseSize = () => {
+				if (strokeSize < 2) {
+					return;
+				}
+				strokeSize--;
+				updateStrokeSize();
+			}
+
+			const updateStrokeSize = () => {
+				$("#strokeSize").html(strokeSize);
+			}
+
+			$(document).ready(function() {
+				updateStrokeSize();
+
+				var mc = new Hammer(document.getElementById("draw"));
+				paper.setup(document.getElementById("draw"));
+
+				mc.on("hammer.input", function(ev) {
+					if (ev.isFirst) {
+						if (ev.srcEvent.shiftKey) {
+							startDraw(ev, "black", 100, "destination-out");
+						} else {
+							startDraw(ev);
+						}
+					} else if (ev.isFinal) {
+						endDraw(ev);
+					} else {
+						middleDraw(ev);
+					}
+				});
+
+				const startDraw = (ev, strokeColor=paintColor, strokeWidth=strokeSize, blindMode="normal") => {
+					console.log("Start draw", ev.center.x, ev.center.y);
+					var path = new paper.Path({
+						strokeColor: strokeColor,
+						strokeWidth: strokeWidth,
+						strokeCap: "round",
+						blindMode: blindMode
+					});
+				}
+
+				const middleDraw = (ev) => {
+					console.log("Middle draw", ev.center.x, ev.center.y);
+					paper.project._activeLayer.lastChild.add({x: ev.center.x, y: ev.center.y});
+				}
+
+				const endDraw = (ev) => {
+					console.log("End draw", ev.center.x, ev.center.y);
+					paper.project._activeLayer.lastChild.simplify(20)
+				}
+			});
+		</script>
+
+	</head>
+
+	<body>
+		<canvas id="draw">
+
+		</canvas>
+		<div id="menu">
+			<button class="menuButton red" onclick="changeColor('red');"></button>
+			<button class="menuButton white" onclick="changeColor('white');"></button>
+			<button class="menuButton blue" onclick="changeColor('blue');"></button>
+			<button class="menuButton plusMinus" onclick="increaseSize();">+</button>
+			<span class="menuButton" id="strokeSize">3</span>
+			<button class="menuButton plusMinus" onclick="decreaseSize();">-</button>
+		</div>
+	</body>
+</html>
